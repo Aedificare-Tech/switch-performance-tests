@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+  master:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/api_test.py --master --expect-workers 1
+
+  worker1:
+    image: locustio/locust
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/api_test.py --worker --master-host master
+
+  worker2:
+    image: locustio/locust
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/api_test.py --worker --master-host master
+
+  locust_exporter:
+    image: containersol/locust_exporter
+    ports:
+      - "9646:9646"
+    network_mode: "host"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/loadtest.yaml:/etc/loadtest.yaml
+    command: --config.file /etc/loadtest.yaml
+    ports:
+      - "9090:9090"
+    network_mode: "host"
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./grafana/dashboard.json:/var/lib/grafana/dashboards/lt_dashboard.json
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    network_mode: "host"
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
