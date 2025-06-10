@@ -6,6 +6,7 @@ Usage:
 
 You can override host/port with environment variables or by editing below.
 """
+
 import os
 from locust import User, task, between, events
 import socket
@@ -13,6 +14,7 @@ import time
 
 HOST = os.getenv("SOCKET_HOST", "127.0.0.1")
 PORT = int(os.getenv("SOCKET_PORT", 65432))
+
 
 class SocketClient:
     def __init__(self, host, port):
@@ -33,6 +35,7 @@ class SocketClient:
         self.sock.sendall(message)
         return self.sock.recv(1024)
 
+
 class SocketUser(User):
     wait_time = between(1, 2)
 
@@ -41,12 +44,7 @@ class SocketUser(User):
         try:
             self.client.connect()
         except Exception as e:
-            events.request_failure.fire(
-                request_type="socket",
-                name="connect",
-                response_time=0,
-                exception=e
-            )
+            events.request_failure.fire(request_type="socket", name="connect", response_time=0, exception=e)
 
     def on_stop(self):
         self.client.close()
@@ -63,14 +61,14 @@ class SocketUser(User):
                     request_type="socket",
                     name="send_message",
                     response_time=total_time,
-                    response_length=len(data)
+                    response_length=len(data),
                 )
             else:
                 events.request_failure.fire(
                     request_type="socket",
                     name="send_message",
                     response_time=total_time,
-                    exception=Exception(f"Unexpected response: {data}")
+                    exception=Exception(f"Unexpected response: {data}"),
                 )
         except Exception as e:
             total_time = int((time.time() - start_time) * 1000)
@@ -78,5 +76,5 @@ class SocketUser(User):
                 request_type="socket",
                 name="send_message",
                 response_time=total_time,
-                exception=e
+                exception=e,
             )
