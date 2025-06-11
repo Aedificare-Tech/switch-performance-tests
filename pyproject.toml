@@ -1,0 +1,12 @@
+[tool.ruff]
+line-length = 108
+select = ["E", "F", "B"]
+ignore = []
+
+[project]
+name = "switch-load-test"
+version = "0.1.0"
+description = "Locust performance tests for switch"
+dependencies = [
+  "locust>=2.24.1"
+]
